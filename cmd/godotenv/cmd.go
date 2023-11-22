@@ -7,7 +7,7 @@ import (
 
 	"strings"
 
-	"github.com/joho/godotenv"
+	"github.com/g41797/godotenv"
 )
 
 func main() {

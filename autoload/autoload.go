@@ -3,12 +3,10 @@ package autoload
 /*
 	You can just read the .env file on import just by doing
 
-		import _ "github.com/joho/godotenv/autoload"
-
-	And bob's your mother's brother
+		import _ "github.com/g41797/godotenv/autoload"
 */
 
-import "github.com/joho/godotenv"
+import "github.com/g41797/godotenv"
 
 func init() {
 	godotenv.Load()

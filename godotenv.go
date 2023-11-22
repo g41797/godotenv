@@ -19,6 +19,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -47,7 +48,8 @@ func Parse(r io.Reader) (map[string]string, error) {
 //
 //	godotenv.Load("fileone", "filetwo")
 //
-// It's important to note that it WILL NOT OVERRIDE an env variable that already exists - consider the .env file to set dev vars or sensible defaults.
+// It's important to note that it WILL NOT OVERRIDE an env variable that already exists -
+// consider the .env file to set dev vars or sensible defaults.
 func Load(filenames ...string) (err error) {
 	filenames = filenamesOrDefault(filenames)
 
@@ -187,6 +189,8 @@ func loadFile(filename string, overload bool) error {
 		return err
 	}
 
+	prefix := envPrefix(filename)
+
 	currentEnv := map[string]bool{}
 	rawEnv := os.Environ()
 	for _, rawEnvLine := range rawEnv {
@@ -195,9 +199,22 @@ func loadFile(filename string, overload bool) error {
 	}
 
 	for key, value := range envMap {
-		if !currentEnv[key] || overload {
-			_ = os.Setenv(key, value)
+		pkey := prefix + key
+
+		if !overload {
+			if currentEnv[pkey] {
+				continue
+			}
+			if currentEnv[key] {
+				continue
+			}
+			_ = os.Setenv(pkey, value)
 		}
+		if currentEnv[pkey] {
+			_ = os.Setenv(pkey, value)
+			continue
+		}
+		_ = os.Setenv(key, value)
 	}
 
 	return nil
@@ -225,4 +242,21 @@ func doubleQuoteEscape(line string) string {
 		line = strings.Replace(line, string(c), toReplace, -1)
 	}
 	return line
+}
+
+func envPrefix(fPath string) string {
+	prefix := strings.ToUpper(baseFileName(fPath)) + "_"
+	return prefix
+}
+
+func baseFileName(fPath string) string {
+	if len(fPath) == 0 {
+		return ""
+	}
+
+	file := filepath.Base(fPath)
+	ext := filepath.Ext(file)
+	name := strings.TrimSuffix(file, ext)
+
+	return name
 }
