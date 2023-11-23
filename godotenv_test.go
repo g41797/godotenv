@@ -36,12 +36,18 @@ func loadEnvAndCompareValues(t *testing.T, loader func(files ...string) error, e
 		t.Fatalf("Error loading %v", envFileName)
 	}
 
+	prefix := envPrefix(envFileName)
+
 	for k := range expectedValues {
-		envValue := os.Getenv(k)
 		v := expectedValues[k]
-		if envValue != v {
-			t.Errorf("Mismatch for key '%v': expected '%#v' got '%#v'", k, v, envValue)
+
+		envBase := os.Getenv(k)
+		envPrefix := os.Getenv(prefix + k)
+
+		if (envBase == v) || (envPrefix == v) {
+			continue
 		}
+		t.Errorf("Mismatch for key '%v': expected '%#v' got '%#v'", k, v, envBase)
 	}
 }
 
@@ -582,42 +588,42 @@ func TestWhitespace(t *testing.T) {
 	}{
 		"Leading whitespace": {
 			input: " A=a\n",
-			key: "A",
+			key:   "A",
 			value: "a",
 		},
 		"Leading tab": {
 			input: "\tA=a\n",
-			key: "A",
+			key:   "A",
 			value: "a",
 		},
 		"Leading mixed whitespace": {
 			input: " \t \t\n\t \t A=a\n",
-			key: "A",
+			key:   "A",
 			value: "a",
 		},
 		"Leading whitespace before export": {
 			input: " \t\t export    A=a\n",
-			key: "A",
+			key:   "A",
 			value: "a",
 		},
 		"Trailing whitespace": {
 			input: "A=a \t \t\n",
-			key: "A",
+			key:   "A",
 			value: "a",
 		},
 		"Trailing whitespace with export": {
 			input: "export A=a\t \t \n",
-			key: "A",
+			key:   "A",
 			value: "a",
 		},
 		"No EOL": {
 			input: "A=a",
-			key: "A",
+			key:   "A",
 			value: "a",
 		},
 		"Trailing whitespace with no EOL": {
 			input: "A=a ",
-			key: "A",
+			key:   "A",
 			value: "a",
 		},
 	}
