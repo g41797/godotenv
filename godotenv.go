@@ -209,6 +209,7 @@ func loadFile(filename string, overload bool) error {
 				continue
 			}
 			_ = os.Setenv(pkey, value)
+			continue
 		}
 		if currentEnv[pkey] {
 			_ = os.Setenv(pkey, value)
